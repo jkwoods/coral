@@ -1,11 +1,11 @@
-use crate::solver::{CoralStepCircuit, CoralWires, to_F};
+use crate::solver::{to_F, CoralStepCircuit, CoralWires};
 use crate::util::ArkPrimeField;
 use ark_r1cs_std::{
-    GR1CSVar,
     alloc::AllocVar,
     boolean::Boolean,
     eq::EqGadget,
-    fields::{FieldVar, fp::FpVar},
+    fields::{fp::FpVar, FieldVar},
+    GR1CSVar,
 };
 use ark_relations::gr1cs::{ConstraintSystemRef, SynthesisError};
 use core::ops::Not;
@@ -231,7 +231,7 @@ pub fn extend_commit<F: ArkPrimeField>(
 
     let same_eval = !terminal | &is_epsilon;
 
-    let root = (val * shift) + &wires.doc_ctr; //To account for SOI 
+    let root = (val * shift) + &wires.doc_ctr; //To account for SOI
     let next_root = &chal[0] - root;
     let eval = &wires.running_eval * next_root;
 
@@ -786,7 +786,10 @@ pub fn ivcify<F: ArkPrimeField>(
     cs: ConstraintSystemRef<F>,
     csc: &mut CoralStepCircuit<F>,
 ) -> Result<(), SynthesisError> {
-    csc.mem.as_mut().unwrap().scan(memory, last_round)?;
+    csc.mem
+        .as_mut()
+        .unwrap()
+        .scan(&Boolean::constant(true), memory, last_round)?;
 
     let mut l_vals: Vec<FpVar<F>> = Vec::new();
     let mut r_vals: Vec<FpVar<F>> = Vec::new();
@@ -893,11 +896,11 @@ mod tests {
     use crate::{circuit::*, solver::InterRoundWires, util::*};
     use ark_bn254::Fr as F;
     use ark_relations::gr1cs::{
-        ConstraintSystem,
         trace::{ConstraintLayer, TracingMode},
+        ConstraintSystem,
     };
     use std::fs;
-    use tracing_subscriber::{Registry, layer::SubscriberExt};
+    use tracing_subscriber::{layer::SubscriberExt, Registry};
 
     pub fn full_test_function_multi(pest_file: String, input: String) {
         let grammar = fs::read_to_string(pest_file).expect("Failed to read grammar file");

@@ -53,7 +53,7 @@ sha2 = "0.10.9"
 ark-relations = {  git = "https://github.com/arkworks-rs/snark/" }
 ark-snark = {  git = "https://github.com/arkworks-rs/snark/" }
 ark-r1cs-std = {  git = "https://github.com/arkworks-rs/r1cs-std" }
-ark-serialize = { git = "https://github.com/arkworks-rs/algebra/"}
+ark-serialize = { git = "https://github.com/arkworks-rs/algebra/", rev = "c1f4f5665504154a9de2345f464b0b3da72c28ec" }
 
 [features]
 metrics = ["dep:dashmap"]
