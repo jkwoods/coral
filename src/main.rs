@@ -27,18 +27,18 @@ fn main() -> Result<()> {
     let mut opt_doc: Option<Vec<char>> = None;
 
     // if opt.commit || opt.prove || opt.e2e {
-        assert!(
-            input_text_path.is_some(),
-            "Input text file must be provided for commit or prove"
-        );
+    assert!(
+        input_text_path.is_some(),
+        "Input text file must be provided for commit or prove"
+    );
 
-        let (grammar_graph, doc) = read_graph(
-            grammar_path.clone(),
-            input_text_path.as_ref().unwrap().clone(),
-        );
+    let (grammar_graph, doc) = read_graph(
+        grammar_path.clone(),
+        input_text_path.as_ref().unwrap().clone(),
+    );
 
-        opt_grammar_graph = Some(grammar_graph);
-        opt_doc = Some(doc);
+    opt_grammar_graph = Some(grammar_graph);
+    opt_doc = Some(doc);
     // }
 
     if opt.e2e || opt.commit {
@@ -90,6 +90,7 @@ fn main() -> Result<()> {
             opt_grammar_graph.as_ref().unwrap(),
             batch_size,
             prover_doc_commit.blind,
+            None,
         )
         .unwrap();
 
@@ -145,16 +146,16 @@ fn main() -> Result<()> {
     #[cfg(feature = "metrics")]
     {
         // if opt_grammar_graph.is_some() && input_text_path.is_some() {
-            metrics_file(
-                opt.metrics.clone(),
-                &grammar_path,
-                &input_text_path.unwrap(),
-                opt_doc.unwrap().len(),
-                opt_grammar_graph.as_ref().unwrap().lcrs_tree.node_count(),
-                opt.batch_size,
-                opt_grammar_graph.as_ref().unwrap().rule_count,
-            );
-            log::write_csv(&opt.metrics.clone().unwrap().as_path().display().to_string()).unwrap();
+        metrics_file(
+            opt.metrics.clone(),
+            &grammar_path,
+            &input_text_path.unwrap(),
+            opt_doc.unwrap().len(),
+            opt_grammar_graph.as_ref().unwrap().lcrs_tree.node_count(),
+            opt.batch_size,
+            opt_grammar_graph.as_ref().unwrap().rule_count,
+        );
+        log::write_csv(&opt.metrics.clone().unwrap().as_path().display().to_string()).unwrap();
         // }
     }
     Ok(())

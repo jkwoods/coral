@@ -1,16 +1,16 @@
 use crate::util::{HashMap, HashSet};
 use crate::{parser::*, util::*};
-use ark_r1cs_std::{GR1CSVar, alloc::AllocVar, boolean::Boolean, fields::fp::FpVar};
+use ark_r1cs_std::{alloc::AllocVar, boolean::Boolean, fields::fp::FpVar, GR1CSVar};
 use ark_relations::gr1cs::ConstraintSystemRef;
 use ark_relations::gr1cs::SynthesisError;
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
 use ark_std::vec::Vec;
-use petgraph::{Direction, visit::EdgeRef};
+use nova_snark::traits::ROConstants;
+use petgraph::{visit::EdgeRef, Direction};
 use segmented_circuit_memory::memory::mem_type::MemType;
-use segmented_circuit_memory::memory::nebula::{MemBuilder, RunningMem};
+use segmented_circuit_memory::memory::nebula::{Extractable, MemBuilder, RunningMem};
 use sha2::{Digest, Sha256};
 use std::{cmp::max, usize};
-use nova_snark::traits::ROConstants;
 
 #[cfg(feature = "metrics")]
 use metrics::metrics::{log, log::Component};
@@ -572,7 +572,8 @@ impl<F: ArkPrimeField> CoralStepCircuit<F> {
     pub fn solve(
         &mut self,
         g: &GrammarGraph,
-        r0_consts: ROConstants<E1>
+        r0_consts: ROConstants<E1>,
+        next_mem_builder: Option<&mut MemBuilder<F>>,
     ) -> Result<(Vec<Vec<N1>>, Vec<Vec<N1>>, CoralStepCircuit<F>), SynthesisError> {
         #[cfg(feature = "metrics")]
         {
@@ -836,6 +837,13 @@ impl<F: ArkPrimeField> CoralStepCircuit<F> {
 
         #[cfg(feature = "metrics")]
         log::tic(Component::Solver, "ic");
+
+        // extract new cmt
+        match next_mem_builder {
+            Some(mb) => mem_builder.extract(mb),
+            None => {}
+        }
+
         let (blinds, ram_hints, ram_batch_size, rm) = mem_builder.new_running_mem(
             r0_consts,
             vec![

@@ -13,11 +13,14 @@ use nova_snark::{
     traits::ROConstants,
 };
 use rand::rngs::OsRng;
-use segmented_circuit_memory::bellpepper::FCircuit;
+use segmented_circuit_memory::{
+    bellpepper::FCircuit,
+    memory::nebula::{Extractable, MemBuilder},
+};
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
-use std::sync::Arc;
 use std::sync::mpsc;
+use std::sync::Arc;
 use std::thread;
 use std::usize;
 use std::{
@@ -98,6 +101,7 @@ pub fn setup<ArkF: ArkPrimeField>(
     grammar_graph: &GrammarGraph,
     batch_size: usize,
     doc_blind: ArkF,
+    next_mem_builder: Option<&mut MemBuilder<ArkF>>,
 ) -> Result<
     (
         ProverInfo,
@@ -111,7 +115,8 @@ pub fn setup<ArkF: ArkPrimeField>(
 
     let r0_consts = ROConstants::<E1>::default();
 
-    let (ic_blinds, ram_hints, mut empty) = base.solve(grammar_graph, r0_consts)?;
+    let (ic_blinds, ram_hints, mut empty) =
+        base.solve(grammar_graph, r0_consts, next_mem_builder)?;
 
     #[cfg(feature = "metrics")]
     log::tic(Component::Generator, "nova_pp_gen_p");
